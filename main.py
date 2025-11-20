@@ -18,10 +18,14 @@ def jewel():
 @click.option(
     "--model",
     "-m",
-    default="gpt4o",
+    default="gemini-2.5-flash",
     show_default=True,
     type=click.Choice(
-        ["gpt4o", "gpt-4.1", "claude-3-5-sonnet-latest", "llama3.1", "gemini-2.5-flash"]
+        [
+            # "gpt4o", "gpt-4.1", "claude-3-5-sonnet-latest", "llama3.1", 
+            "gemini-2.5-flash",
+            "gemini-flash-latest"
+        ]
     ),
     help="Select LLM model to use (e.g., gpt4o, claude sonnet 3.5, ollama models)",
 )

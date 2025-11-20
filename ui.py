@@ -268,9 +268,9 @@ st.sidebar.subheader("Settings")
 model = st.sidebar.selectbox(
     "Choose an LLM model",
     [
-        "gpt4o", "gpt-4.1", 
-        "claude-3-5-sonnet-latest", 
-        "llama3.1", 
+        # "gpt4o", "gpt-4.1", 
+        # "claude-3-5-sonnet-latest", 
+        # "llama3.1", 
         "gemini-2.5-flash",
         "gemini-flash-latest"
     ],
