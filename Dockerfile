@@ -19,6 +19,9 @@ COPY . .
 
 RUN chmod +x /app/entrypoint.sh
 
+# Railway will run the container without arguments
+# So entrypoint should default to UI mode
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-CMD []
+# Default command (runs when no args provided)
+CMD ["ui"]
