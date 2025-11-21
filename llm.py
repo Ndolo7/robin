@@ -78,13 +78,15 @@ def filter_results(llm, query, results):
     )
     chain = prompt_template | llm | StrOutputParser()
     try:
-        result_indices = chain.invoke({"query": query, "results": final_str})
-    except openai.RateLimitError as e:
-        print(
-            f"Rate limit error: {e} \n Truncating to Web titles only with 30 characters"
-        )
-        final_str = _generate_final_string(results, truncate=True)
-        result_indices = chain.invoke({"query": query, "results": final_str})
+        result_indices = chain.invoke({
+            "query": query, 
+            "results": final_str,
+            "max_index": len(results)
+        })
+    except Exception as e:  # Catch all exceptions, not just RateLimitError
+        print(f"Error during LLM filtering: {e}")
+        # Fallback: return first 20 results
+        return results[:20]
 
     # Select top_k results using original (non-truncated) results
     # Parse the result safely
