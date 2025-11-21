@@ -78,48 +78,42 @@ def filter_results(llm, query, results):
     )
     chain = prompt_template | llm | StrOutputParser()
     try:
-        result_indices = chain.invoke({
-            "query": query, 
-            "results": final_str,
-            "max_index": len(results)
-        })
-    except Exception as e:  # Catch all exceptions, not just RateLimitError
-        print(f"Error during LLM filtering: {e}")
-        # Fallback: return first 20 results
-        return results[:20]
+        result_indices = chain.invoke({"query": query, "results": final_str})
+    except openai.RateLimitError as e:
+        print(
+            f"Rate limit error: {e} \n Truncating to Web titles only with 30 characters"
+        )
+        final_str = _generate_final_string(results, truncate=True)
+        result_indices = chain.invoke({"query": query, "results": final_str})
 
     # Select top_k results using original (non-truncated) results
-    # Parse the result safely
     parsed_indices = []
-    try:
-        # Extract all numbers from the response
-        for match in re.findall(r'\d+', result_indices):
+    for match in re.findall(r"\d+", result_indices):
+        try:
             idx = int(match)
-            # Validate the index is within bounds
             if 1 <= idx <= len(results):
                 parsed_indices.append(idx)
-                
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_indices = [i for i in parsed_indices if not (i in seen or seen.add(i))]
-        
-        # Limit to top 20
-        selected_indices = unique_indices[:20]
-        
-        if not selected_indices:
-            print(f"No valid indices parsed from: '{result_indices}'. Using fallback.")
-            # Fallback: return first 20 results
-            return results[:20]
-            
-        # Convert to 0-based indexing and get results
-        top_results = [results[i - 1] for i in selected_indices]
-        
-        return top_results
-        
-    except Exception as e:
-        print(f"Error parsing LLM response '{result_indices}': {e}")
-        # Fallback: return first 20 results
-        return results[:20]
+        except ValueError:
+            continue
+
+    # Remove duplicates while preserving order
+    seen = set()
+    parsed_indices = [
+        i for i in parsed_indices if not (i in seen or seen.add(i))
+    ]
+
+    if not parsed_indices:
+        logging.warning(
+            "Unable to interpret LLM result selection ('%s'). "
+            "Defaulting to the top %s results.",
+            result_indices,
+            min(len(results), 20),
+        )
+        parsed_indices = list(range(1, min(len(results), 20) + 1))
+
+    top_results = [results[i - 1] for i in parsed_indices[:20]]
+
+    return top_results
 
 
 def _generate_final_string(results, truncate=False):
