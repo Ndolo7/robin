@@ -419,9 +419,8 @@ if run_button and query:
         def replace_markdown_link(match):
             link_text = match.group(1)
             link_url = match.group(2)
-            # Use the link text if it's not just the URL, otherwise use a truncated version
-            display_text = link_text if link_text != link_url else (link_url[:57] + '...' if len(link_url) > 60 else link_url)
-            return f'<a href="{link_url}" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; text-decoration: underline;">{display_text}</a>'
+            
+            return f'<a href="{link_url}" target="_blank" rel="noopener noreferrer" style="color: #60a5fa; text-decoration: underline;">{link_text}</a>'
         
         # Replace markdown links with HTML links
         result = re.sub(link_pattern, replace_markdown_link, result)
